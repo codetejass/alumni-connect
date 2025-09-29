@@ -1,3 +1,5 @@
+// In codetejass/alumni-connect/alumni-connect-46cbb86ccbec6bd05628c9de08ac9a0122f24892/app/onboarding/page.tsx
+
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import OnboardingForm from "./ui/onboarding-form"
@@ -15,5 +17,7 @@ export default async function OnboardingPage() {
   if (!user) return null
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()
-  return <OnboardingForm profile={profile || null} />
+  
+  // Pass the entire 'user' object to the form
+  return <OnboardingForm profile={profile || null} user={user} />
 }
