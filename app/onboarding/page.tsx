@@ -18,6 +18,6 @@ export default async function OnboardingPage() {
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()
   
-  // Pass the entire 'user' object to the form
-  return <OnboardingForm profile={profile || null} user={user} />
+  // Revert this line - no need to pass the 'user' object anymore
+  return <OnboardingForm profile={profile || null} />
 }
