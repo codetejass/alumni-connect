@@ -1,3 +1,5 @@
+// In codetejass/alumni-connect/alumni-connect-46cbb86ccbec6bd05628c9de08ac9a0122f24892/app/onboarding/ui/onboarding-form.tsx
+
 "use client"
 import { useState } from "react"
 import type React from "react"
@@ -7,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { User } from "@supabase/supabase-js" // Import the User type for better type safety
 
-export default function OnboardingForm({ profile }: { profile: any }) {
+export default function OnboardingForm({ profile, user }: { profile: any; user: User }) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -22,16 +25,26 @@ export default function OnboardingForm({ profile }: { profile: any }) {
   async function save(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: fullName,
-        course,
-        specialization,
-      })
-      .eq("id", profile.id)
+
+    // Since this page is for onboarding, we create a new profile using 'insert'.
+    const { error } = await supabase.from("profiles").insert({
+      id: user.id, // Use the user's ID from the prop
+      role: "student", // Set a default role for new users
+      full_name: fullName,
+      course,
+      specialization,
+    })
+
     setLoading(false)
-    if (!error) router.replace("/dashboard")
+
+    if (!error) {
+      // Redirect to the dashboard and refresh to get the new server state
+      router.replace("/dashboard")
+      router.refresh()
+    } else {
+      console.error("Error creating profile:", error)
+      // You could add UI feedback here, like a toast notification
+    }
   }
 
   return (
