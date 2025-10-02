@@ -1,8 +1,7 @@
+// In codetejass/alumni-connect/alumni-connect-46cbb86ccbec6bd05628c9de08ac9a0122f24892/app/recruiter/page.tsx
+
+import Dashboard from "@/components/kokonutui/dashboard";
+
 export default function RecruiterDashboard() {
-  return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">Recruiter Dashboard</h1>
-      <p className="text-muted-foreground mt-1">Post jobs and track applicants.</p>
-    </main>
-  )
+  return <Dashboard />;
 }
