@@ -4,12 +4,18 @@
 import { useState } from "react"
 import type React from "react"
 
+import { createBrowserClient } from "@supabase/ssr"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { User } from "@supabase/supabase-js"
 
-export default function OnboardingForm({ profile }: { profile: any }) {
+export default function OnboardingForm({ profile, user }: { profile: any; user: User }) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
   const router = useRouter()
   const [fullName, setFullName] = useState(profile?.full_name ?? "")
   const [course, setCourse] = useState(profile?.course ?? "")
@@ -22,34 +28,23 @@ export default function OnboardingForm({ profile }: { profile: any }) {
     setLoading(true)
     setError(null)
 
-    try {
-      const response = await fetch("/api/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          full_name: fullName,
-          course,
-          specialization,
-          // The API route will automatically handle the user ID and role
-        }),
-      })
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id, // The user's ID is the primary key
+      role: profile?.role ?? "student", // Use existing role or default to "student"
+      full_name: fullName,
+      course,
+      specialization,
+    })
 
-      const result = await response.json()
+    setLoading(false)
 
-      if (!response.ok) {
-        throw new Error(result.error || "An unknown error occurred.")
-      }
-
-      // On success, redirect and refresh the page to get the new server state
+    if (!error) {
+      // On success, redirect and refresh
       router.replace("/dashboard")
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
-      console.error("Error saving profile:", err)
-    } finally {
-      setLoading(false)
+    } else {
+      setError(error.message)
+      console.error("Error saving profile:", error)
     }
   }
 
